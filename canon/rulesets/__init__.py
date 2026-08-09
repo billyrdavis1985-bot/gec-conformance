@@ -98,8 +98,11 @@ JCS_BASE64URL = Ruleset(
     digest_encoding=DigestEncoding.BASE64URL,
 )
 
+from .scqos import SCQOS_ES6, SCQOS_LITERAL, SCQOS_LITERAL_ES6NUM, SCQOS_RULESETS  # noqa: E402
+
 REGISTRY: dict[str, Ruleset] = {
-    r.name: r for r in (JCS, NFC_UTF8_ASCII, PRETTY_SORTED, JCS_BASE64URL)
+    r.name: r
+    for r in (JCS, NFC_UTF8_ASCII, PRETTY_SORTED, JCS_BASE64URL, *SCQOS_RULESETS)
 }
 
 

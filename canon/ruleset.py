@@ -143,6 +143,7 @@ class Ruleset:
     indent: int  # 0 = no pretty printing
     digest_algorithm: str  # hashlib name
     digest_encoding: DigestEncoding
+    max_canonical_bytes: int | None = None  # size ceiling on the encoded object
 
     # Documented gaps: questions this ruleset's source did not answer, where the
     # value below is this implementation's assumption rather than the spec's rule.
@@ -162,6 +163,7 @@ class Ruleset:
             "indent",
             "digest_algorithm",
             "digest_encoding",
+            "max_canonical_bytes",
         ):
             value = getattr(self, field)
             marker = "  [ASSUMED]" if field in self.assumed_fields else ""

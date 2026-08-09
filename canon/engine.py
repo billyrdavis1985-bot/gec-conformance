@@ -58,7 +58,13 @@ class Canonicalizer:
         text = self._serialize(value, depth=0)
         if self.rules.trailing_newline:
             text += self._newline()
-        return text.encode("utf-8")
+        raw = text.encode("utf-8")
+        cap = self.rules.max_canonical_bytes
+        if cap is not None and len(raw) > cap:
+            raise CanonicalizationError(
+                f"canonical form is {len(raw)} bytes, exceeding the {cap}-byte ceiling"
+            )
+        return raw
 
     def digest(self, value: Any) -> str:
         """Return the encoded digest of the canonical bytes."""

@@ -292,6 +292,53 @@ CORPUS: tuple[Case, ...] = (
         "Per-element ordering and empty-object handling in sequence.",
     ),
     Case(
+        "PKT-01",
+        Q_STRUCT,
+        "SCQOS universal packet, all 16 declared fields",
+        {
+            "packet_id": "pkt-0002",
+            "system_type": "capability",
+            "action": "execute",
+            "actor": "qec-syndrome-decode@1.0.0",
+            "observer_id": "hudson-forge",
+            "source": "sha256:" + "a" * 64,
+            "target": "sha256:" + "b" * 64,
+            "declared_objective": "decode committed syndrome records",
+            "boundary_domain": "offline",
+            "cause_id": "pkt-0001",
+            "effect_id": "pkt-0003",
+            "payload": {
+                "session_index": 2,
+                "calibration_window_id": "2026-08-06T23:21:59-04:00",
+                "shots": 1024.0,
+                "logical_error_count": 17,
+                "defects_per_round": [3, 0, 5],
+            },
+            "created_at": "2026-08-09T14:32:07Z",
+            "sequence": 2,
+            "external_reference": None,
+            "external_signature": None,
+        },
+        "The real target shape. Combines the schema's declared fields with a "
+        "float-valued shots count, an integer sequence, and two nullable "
+        "external fields. If two faithful readings of the specification disagree "
+        "here, they disagree on ordinary production data.",
+        ("high-value", "scqos"),
+    ),
+    Case(
+        "PKT-02",
+        Q_STRUCT,
+        "Same instant, two timestamp encodings",
+        {
+            "a": {"created_at": "2026-08-09T14:32:07Z"},
+            "b": {"created_at": "2026-08-09T14:32:07.000+00:00"},
+        },
+        "created_at appears in the packet schema with no format rule. Precision "
+        "and timezone encoding are unconstrained, so the same instant has more "
+        "than one canonical form and therefore more than one digest.",
+        ("high-value", "scqos"),
+    ),
+    Case(
         "STR-03",
         Q_STRUCT,
         "Realistic receipt-shaped document",
