@@ -1,0 +1,277 @@
+# Preregistration — Independent Conformance Test of a Governed-Execution Substrate
+
+**protocol_id:** `gec-conformance`
+**protocol_version:** `1.0.0`
+**subject system:** SCQOS (SC-Engineering)
+**capability under contract:** `qec-syndrome-decode v1.0.0`, contract digest recorded at freeze
+**author:** Billy R. Davis Jr., Hudson Forge Technologies LLC
+**status:** REGISTERED PRIOR TO EXECUTION — no case, prediction, or criterion below may be
+edited after registration; changes are appended as dated deviations (§9)
+**registration venue:** OSF (DOI recorded on registration)
+
+---
+
+## 0. What this protocol is
+
+A preregistered conformance protocol for systems that claim to govern execution by admitting
+or holding state transitions against declared invariants. It is written to be reusable against
+any such system. SCQOS is the first subject.
+
+The design follows a controlled-corruption pattern: an independently authored capability is
+executed through the substrate under a frozen contract, benign perturbations and deliberate
+violations are injected, and the substrate's decision **and its stated reason** are compared
+against predictions locked before execution.
+
+**Why predictions are locked first.** Both parties want a particular outcome. Post-hoc
+reasoning about whether a HOLD was "for the right reason" is unfalsifiable and both of us
+would do it in good faith. Locking the predicted decision *and the predicted failing
+predicate* removes that degree of freedom from both sides.
+
+---
+
+## 1. Object under test — pinning requirement
+
+The subject system is under active development. Results are meaningless unless the object is
+pinned. Before the first execution, the following are recorded and frozen:
+
+| Item | Recorded value |
+|---|---|
+| SCQOS build digest | _(at execution)_ |
+| Invariant-set / policy version | _(at execution)_ |
+| Adapter stub version + digest | _(at execution)_ |
+| Receipt schema version | _(at execution)_ |
+| Canonicalization spec document digest | _(at execution)_ |
+| Capability contract digest | _(from contract §11)_ |
+| Decode table digest | _(from contract §11)_ |
+
+If any pinned item changes mid-study, every completed case is either re-run against the new
+pin or reported separately under the old pin. Silently mixing pins is treated as a failed
+study, not a deviation.
+
+---
+
+## 2. Independence declarations
+
+Recorded before execution so the independence claim is auditable rather than asserted:
+
+1. The capability, contract, canonicalizer, verifier, and harness were authored without access
+   to SCQOS source code.
+2. The clean-room canonicalizer and receipt verifier were written **from the specification
+   document alone**, whose digest is pinned in §1. Confirmed by commit history predating any
+   access to SCQOS implementation.
+3. The capability is not tuned to pass. Per SC-Engineering's explicit instruction, no change
+   is made to the capability, contract, or inputs for the purpose of producing a PERMIT.
+4. Where a case fails for reasons of unimplemented functionality rather than design, it is
+   reported as such. "Not built yet" and "designed wrong" are different findings and are not
+   merged.
+
+---
+
+## 3. Claims under test
+
+Stated as SC-Engineering stated them, so the result is measured against the actual claim.
+
+**H1 — Cross-execution continuity.** SCQOS carries Continuity across executions, not as an
+isolated pre-execution check. A state that is locally valid but illegal only in relation to
+its predecessor must HOLD.
+
+**H2 — Mediating enforcement.** SCQOS is out-of-process mediating, not advisory. A capability
+inside the governed boundary possesses no alternate execution lane; an undeclared consequence
+is a governance violation.
+
+> Noted for the record: the claim as stated was that SCQOS is *intended to be* mediating.
+> H2 tests the running system, and a negative result may indicate an unimplemented mechanism
+> rather than a rejected design. §2.4 applies.
+
+**H3 — Predicate independence.** I1–I8 are eight invariants, not fewer wearing eight names.
+Specifically, I2 Continuity, I4 Genesis, and I7 Causality are operationally distinct.
+
+**H4 — Verification independence.** The receipt is independently verifiable: canonicalization
+is specified precisely enough that a clean-room implementation produces byte-identical output.
+
+**H5 — Selectivity.** The gate discriminates. It does not achieve its violation-detection rate
+by holding broadly.
+
+**H6 — Socket generality.** An externally authored contract is accepted without manual
+bridging by either party.
+
+---
+
+## 4. Primary and secondary outcomes
+
+**Primary — predicate-level agreement.** For each case: does the observed failing predicate
+match the predicted failing predicate? Decision-level agreement is secondary, because a system
+can reach the right decision by the wrong route and decision-level scoring cannot tell.
+
+**Secondary:**
+
+- Decision-level confusion matrix (PERMIT / HOLD / TERMINATE × predicted).
+- **False-positive rate on negative controls.** Reported alongside true-positive rate in every
+  summary, without exception. A gate that HOLDs on everything scores perfectly on violations
+  and is worthless; any report omitting the FP rate is incomplete.
+- **Aliasing co-fire matrix.** Across all lineage-violation cases, the joint firing pattern of
+  I2 / I4 / I7, together with their evaluated inputs and evidence payloads.
+- Bridging ledger: every manual intervention required to make the integration work, itemized.
+- Byte-level agreement between clean-room and SCQOS canonicalization.
+
+---
+
+## 5. Case matrix — 21 cases, predictions locked
+
+Predicted decision and predicted failing predicate are fixed at registration. Phase 1 cases
+are marked ●; the remainder are declared here and deferred, so that the executed subset cannot
+be read as post-hoc selection.
+
+### 5.1 Negative controls — must PERMIT (5)
+
+| ID | Case | Predicted | Predicate |
+|---|---|---|---|
+| ● C01 | Clean session 2: new calibration window, valid parent, matching digests | PERMIT | none fail |
+| ● C02 | Benign perturbation: an irrelevant, non-material metadata field altered | PERMIT | none fail |
+| C03 | Non-semantic reordering of fields in the declared input | PERMIT | none fail |
+| C04 | Session 3 following a session 2 that was HELD and legitimately requalified | PERMIT | none fail |
+| ● C05 | Serialization variance pair: identical semantics, differing byte encoding | PERMIT both, **identical decision and identical digest** | none fail |
+
+C05 is simultaneously the canonicalization test (H4) and a negative control (H5).
+
+### 5.2 Continuity and lineage (7)
+
+| ID | Case | Predicted | Predicate |
+|---|---|---|---|
+| ● C06 | Session 2 declares a calibration window identical to session 1 | HOLD | I2, possibly I4 |
+| ● C07 | Declared parent receipt absent from governance state | HOLD | I2 |
+| C08 | Session 2 submitted claiming fresh genesis, no parent declared | HOLD | I4 |
+| ● C09 | Two executions submitted concurrently against the same parent | exactly one PERMIT, one HOLD-or-re-evaluate | I2 (+I1) |
+| C10 | Session 1's contract and inputs replayed as session 2 | HOLD | I2, I6 |
+| C11 | Fabricated ancestry: a self-asserted session-1 record claimed as parent | HOLD | I4, I6 |
+| C12 | Content-address collision: byte-identical declared state as a distinct session | HOLD | I2, I6 |
+
+C11 tests a surface introduced by the answer to blocker 2. Lineage state being persistent and
+content-addressed protects retrieved records from tampering; it says nothing about what may be
+*asserted at write time*. If a capability can populate its own ancestry, continuity is only as
+strong as the initial authority check.
+
+C12 probes whether session identity is content-derived or independently assigned. If
+content-derived, a legitimate identical re-run and a replay are indistinguishable.
+
+### 5.3 Reference and alignment (4)
+
+| ID | Case | Predicted | Predicate |
+|---|---|---|---|
+| ● C13 | Declared input digest does not match actual input bytes | HOLD | I6 |
+| C14 | Contract version incremented mid-execution | HOLD | I3, I6 |
+| C15 | Decode table substitution: table X declared, table Y executed | HOLD | I3, I6 |
+| C16 | Retry re-parenting: after losing C09, is the loser silently re-parented to the winner's state? | HOLD, or PERMIT only with the new parent explicitly declared and re-admitted | I3 |
+
+C16 follows from the answer to blocker 3. "The other must re-evaluate against the new present
+state" means the loser retries rather than fails. If it then succeeds as a successor of a
+lineage it never declared, execution has drifted from what was authorized — an Alignment
+failure, not a Continuity one.
+
+### 5.4 Boundary and enforcement (3)
+
+| ID | Case | Predicted | Predicate |
+|---|---|---|---|
+| ● C18 | Consequence emitted with no admission request at all | detected; HOLD or TERMINATE | enforcement, I5 |
+| C17 | Capability writes a second artifact outside declared outputs | HOLD or TERMINATE | I5 |
+| C19 | Declared resource ceiling exceeded (wall clock or memory per contract §5.2) | HOLD or TERMINATE | I5 |
+
+C18 is the load-bearing test for H2 and is the cheapest case in the matrix. If an undeclared
+consequence emitted without requesting admission goes undetected, then "no alternate execution
+lane" does not hold in the running system, and every downstream claim about provable
+boundaries is conditional on capability cooperation. That is a legitimate scope for a
+governance system — it is not the scope currently claimed.
+
+### 5.5 Time and accountability (2)
+
+| ID | Case | Predicted | Predicate |
+|---|---|---|---|
+| C20 | Admission presented outside its declared validity window | HOLD | I1 |
+| C21 | Authority resolves and is unrevoked; withdrawal channel unreachable | HOLD | I8 / Accountability |
+
+C21 tests the distinction SC-Engineering accepted: authority must remain attributable,
+challengeable, and **withdrawable**, not merely cryptographically present. A PERMIT here means
+the predicate checks key presence. This is a scope finding about the trust model rather than a
+defect claim, and is reported that way.
+
+### 5.6 Declared but out of scope
+
+The signed-discontinuity escape — an authority declaring an authorized discontinuity to clear
+a HOLD — is **not tested**, and the reason is recorded here rather than omitted. The answer to
+blocker 4 makes it legitimate by design, so a PERMIT would not be a finding. What it
+establishes is a scope boundary worth stating in SCQOS documentation: **SC constrains
+capabilities, not authorities.** Holders of authority can lawfully clear a HOLD; software
+inside the boundary cannot. That is a common and defensible trust model. It is narrower than
+the surrounding language implies.
+
+---
+
+## 6. Phase structure
+
+**Phase 1 (8 cases):** C01, C02, C05, C06, C07, C09, C13, C18.
+
+Chosen for coverage of every hypothesis at least once, and for cost. C09 and C18 were promoted
+from the deferred set after the answers to blockers 1 and 3 made them directly falsifiable.
+
+**Phase 2 (13 cases):** the remainder, executed on the same pin or on a newly recorded pin per §1.
+
+Phase 1 results are published whether or not phase 2 occurs. Phase 2 is not a condition of
+reporting.
+
+---
+
+## 7. Falsification criteria
+
+Fixed in advance. Each is a single-case criterion; no aggregate score can rescue a failed one.
+
+| Claim | Falsified if |
+|---|---|
+| H1 | C06 returns PERMIT |
+| H2 | C18 goes undetected, or C17/C19 produce their consequence before any HOLD |
+| H3 | I2, I4 and I7 co-fire on 100% of C06–C12 with substantively identical evidence payloads |
+| H4 | Clean-room and SCQOS canonicalization disagree on any byte in C05 |
+| H5 | Any negative control (C01–C05) returns HOLD |
+| H6 | The contract requires manual bridging by either party to be accepted |
+
+**H3 note.** Co-firing alone is not proof of aliasing; a single event can legitimately violate
+several invariants. The evidence payloads are what decide it. If I2, I4 and I7 always fire
+together *and* always cite the same evaluated inputs, they are one predicate under three
+names. If they cite different evidence, they are distinct and the criticism is withdrawn.
+
+---
+
+## 8. Execution and reporting protocol
+
+1. Register this document; record the DOI.
+2. Pin every item in §1; publish the pin table.
+3. Execute phase 1 in the order listed. No case is re-run to obtain a different result; every
+   run is recorded, including infrastructure failures.
+4. Verify every receipt with both verifiers; record byte-level agreement.
+5. Report the predicate-level matrix, the decision-level matrix, the false-positive rate, the
+   aliasing co-fire matrix, and the bridging ledger.
+6. Publish regardless of outcome. Negative results are published in the same venue, at the same
+   length, on the same timeline as positive ones.
+
+**Non-repair rule.** Defects in the subject system encountered during execution are logged as
+findings and not fixed by the author. Diagnosing SCQOS is outside the declared scope of this
+work, and repairing it mid-study would destroy the independence claim in §2.
+
+---
+
+## 9. Deviations
+
+Any departure from this protocol is appended below with date, description, and reason, before
+the affected result is reported. Deviations are not edits: no line above is altered.
+
+_(none at registration)_
+
+---
+
+## 10. Publication
+
+- Preregistration: OSF, with DOI, prior to execution.
+- Protocol, harness, canonicalizer, verifier: author's repository under the author's license.
+- Results: published in full, positive or negative, per the terms of record in contract §12.
+
+The protocol is intended to be reusable against any system claiming governed execution. SCQOS
+is its first subject, and its value does not depend on the outcome of that first test.
