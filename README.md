@@ -71,7 +71,8 @@ the build.
 
 ## Usage
 
-    python3 -m unittest discover -s tests     # 31 self-tests
+    python3 -m unittest discover -s tests     # 39 tests
+    python3 -m unittest tests.test_rfc8785_vectors -v   # official RFC vectors
     python3 cli.py rulesets                   # every ruleset and its decisions
     python3 cli.py corpus --high-value        # the discriminating cases
     python3 cli.py diff jcs nfc_utf8_ascii -v # differential run
@@ -102,6 +103,17 @@ cases failed."
   standard library parser silently discards them *before* canonicalization can
   see them, so a default-parser verifier cannot detect a producer that exploited
   the ambiguity.
+
+## Baseline validation
+
+The JCS ruleset passes RFC 8785's own published vectors: all 24 finite Appendix B
+number samples, both non-finite refusals, the Section 3.2.3 UTF-16 property
+sorting test, and the Section 3.2.4 byte-exact end-to-end example. A deliberately
+broken renderer using the platform float repr fails 10 of the 24, so the harness
+discriminates rather than passing vacuously.
+
+This matters for attribution: a divergence found against a subject specification
+can be charged to that specification rather than to a defect in the baseline.
 
 ## Status
 

@@ -4,6 +4,9 @@
 **subject:** SCQOS canonicalization specification, prose as supplied 2026-08-09
 **method:** clean-room implementation from specification text only; no access to
 `scqos.py`, `scqos_root_adapter.py`, or any canonical bytes produced by SC-Engineering
+**baseline validated:** the JCS reference implementation used for comparison passes
+all 24 finite Appendix B vectors, the Section 3.2.3 UTF-16 sorting test, and the
+Section 3.2.4 byte-exact end-to-end example from RFC 8785 (see §Baseline validation)
 **status:** finding, pre-integration. No governed execution has occurred.
 **severity:** high — affects ordinary production values, not edge cases
 
@@ -225,10 +228,37 @@ verifiers carries no information, because the specification permits both answers
 
 ---
 
+## Baseline validation
+
+Before treating any divergence below as a finding about the SCQOS specification, the
+JCS implementation used as the comparison baseline was validated against RFC 8785's
+own published vectors:
+
+| Source | Vectors | Result |
+|---|---|---|
+| Appendix B, Table 1 — IEEE-754 number serialization | 24 finite | all match |
+| Appendix B — NaN and Infinity | 2 | both correctly refused |
+| Section 3.2.3 — UTF-16 code unit property sorting | full ordering | matches |
+| Section 3.2.4 — end-to-end canonical UTF-8 output | byte-exact | matches |
+
+The sorting test is the meaningful one: RFC 8785's own data places U+1F600 before
+U+FB33, which only UTF-16 code unit ordering produces. Codepoint or UTF-8 ordering
+reverses them. Passing it confirms the collation is the standard's, not a
+coincidence of ASCII-only test data.
+
+The number harness was also checked against a deliberately broken renderer: the
+platform's own float repr fails 10 of the 24 Appendix B vectors, confirming the
+test discriminates rather than passing vacuously. That 10-of-24 figure is itself
+relevant to Gap 1 — it is the rate at which a naive implementation diverges from
+the ECMAScript algorithm on the RFC's own sample values.
+
+Fetching a published standard's vectors does not touch the independence claim in
+preregistration §2.2, which concerns SC-Engineering source and output only.
+
 ## Reproduction
 
 ```
-python3 -m unittest discover -s tests     # 31 self-tests
+python3 -m unittest discover -s tests     # 39 tests, incl. RFC 8785 vectors
 python3 cli.py rulesets                   # all rulesets, [ASSUMED] fields marked
 python3 cli.py diff scqos_literal scqos_es6 -v
 python3 cli.py diff scqos_literal scqos_literal_es6num -v   # isolates Gap 1
