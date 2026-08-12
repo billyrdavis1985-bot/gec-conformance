@@ -2,12 +2,28 @@
 
 **capability_id:** `qec-syndrome-decode`
 **capability_version:** `1.0.0`
-**contract_version:** `1.0.0`
-**contract_status:** FROZEN — no field below may change without a version increment
+**contract_version:** `1.1.0`
+**contract_status:** DRAFT — freezes at §11; no field may change after freeze without a version increment
+**supersedes:** `1.0.0` (unfrozen, unpublished, never executed against)
 **author:** Billy R. Davis Jr., Hudson Forge Technologies LLC
 **authored_independently_of:** SC-Engineering / SCQOS
 **date_frozen:** _(set at freeze; see §11)_
 **contract_digest:** _(computed at freeze per §11; this document is content-addressed)_
+
+---
+
+## Revision note — 1.0.0 to 1.1.0
+
+The governing invariant in §5.1 changed from a calibration-window-identity rule to a
+minimum temporal separation between sessions, with the calibration fields demoted to
+declared-but-not-admitted stratification. §3.1 gains `collection_start`,
+`calibration_age_hours`, and `calibration_stratum`, and pins a timestamp format.
+
+Version 1.0.0 was never frozen, never registered, and no execution was performed against
+it. This revision therefore invalidates nothing. It is recorded rather than silently
+applied because the reason for the change — that a published calibration timestamp is a
+weak proxy for hardware state — is itself relevant to what the substrate is being asked
+to enforce. See §5.1.1.
 
 ---
 
@@ -24,9 +40,10 @@ Two consequences follow, and both are deliberate:
    accept it without manual bridging, that is a finding about the socket, not a defect in this
    document. Required changes must be recorded as adapter findings, not as silent edits here.
 2. **The governing invariant under test (§5.1) belongs to the capability, not to SCQOS.**
-   It is a methodological rule from the QEC-P1 experimental protocol. SCQOS is being asked to
-   carry a rule it did not author, across executions it does not own. That is the substance of
-   the test.
+   It is a methodological rule from the QEC-P1 experimental protocol — a minimum temporal
+   separation between collection sessions. SCQOS is being asked to carry a rule it did not
+   author, across executions it does not own, using a predicate that spans two of its own
+   invariants. That is the substance of the test.
 
 This document is the sole normative description of the capability. Where it disagrees with
 any conversation, message, or later summary, this document governs.
@@ -81,7 +98,10 @@ input:
   schema:
     session_index:          integer    # 1-based, monotonic within lineage
     backend_id:             string     # e.g. "ibm_fez"
-    calibration_window_id:  string     # opaque identifier of the hardware calibration window
+    collection_start:       string     # RFC 3339, UTC, second precision, "Z" suffix
+    calibration_window_id:  string     # published calibration timestamp at collection time
+    calibration_age_hours:  number     # collection_start minus calibration_window_id, hours
+    calibration_stratum:    string     # "fresh" | "stale", derived per §5.1.2
     code_distance:          integer
     rounds:                 integer
     shots:                  integer
@@ -89,7 +109,13 @@ input:
     parent_receipt_id:      string|null     # null permitted only for session_index == 1
 ```
 
-`calibration_window_id` is **material** to admission. It is not metadata. See §5.1.
+`collection_start` is **material** to admission and carries the separation predicate.
+`calibration_window_id` and `calibration_age_hours` are material to stratification but
+**not** to admission. See §5.1 for why the two are separated.
+
+`collection_start` format is fixed here because the invariant is temporal: two encodings
+of the same instant must not produce two different admission results. RFC 3339, UTC,
+second precision, literal `Z`. No offset forms, no sub-second digits.
 
 ### 3.2 Declared output
 
@@ -157,26 +183,80 @@ finding against the capability, not against SCQOS.
 
 ### 5.1 Lineage boundary — the invariant under test
 
+#### 5.1.1 The admission predicate
+
 For any execution with `session_index = N` where `N > 1`:
 
 ```
-REQUIRED: calibration_window_id(N) != calibration_window_id(N-1)
+REQUIRED: collection_start(N) - collection_start(N-1) >= 12 hours
 ```
 
-**Rationale.** Two sessions collected inside the same hardware calibration window are not
-statistically independent. Treating them as independent sessions is pseudoreplication and
-invalidates the downstream error-rate estimate. The consequence is methodological, not
-cosmetic: the experiment produces a wrong number that looks like a right number.
+Computed over instants, not calendar fields. Both operands are the `collection_start`
+values declared in the respective admitted states.
 
-**Why this is the test.** The violating execution is *locally valid*. Session N in isolation
-satisfies every within-execution check: its input digest resolves, its schema validates, its
-decode completes, its output is well-formed. It is illegal only in relation to session N-1.
+**Rationale.** Sessions collected too close together are not statistically independent:
+they share hardware conditions, and treating them as independent replicates is
+pseudoreplication. The consequence is methodological, not cosmetic — the experiment
+produces a wrong number that looks like a right number.
 
-A per-execution admission gate that does not retain session N-1 will PERMIT. SCQOS claims to
-carry Continuity across the lifecycle rather than performing an isolated pre-execution check.
-Under that claim, the required decision is **HOLD**.
+**Why a temporal separation and not a calibration-window change.** An earlier revision of
+this contract used `calibration_window_id(N) != calibration_window_id(N-1)`. That
+predicate was superseded, and the reason is recorded here rather than quietly dropped,
+because it bears on what the substrate is being asked to enforce.
 
-Additional lineage requirements:
+The published calibration timestamp turned out to be a weak proxy for hardware state. The
+device under study is a Heron r2 processor running continuous mitigation: it self-adjusts
+while its published metadata stays fixed. During collection, an observed freeze held the
+published timestamp constant for roughly 83 hours across multiple backends — well beyond
+the 60.6-hour maximum in an archive of 707 hourly snapshots whose median gap is 1.2 hours.
+The vendor separately documents that a failed benchmarking run may be reported as an
+error value of exactly 1.0, meaning *undefined* rather than *catastrophic*.
+
+So a window-ID change is neither necessary nor sufficient for independence. Elapsed time
+is the weaker but honest proxy, and it is the one the replication unit now rests on.
+
+**Why this makes a better test article.** Three properties, each of which the previous
+predicate lacked:
+
+1. It engages **two** invariants jointly. The predicate is temporal, so I1 Time is
+   implicated alongside I2 Continuity. If the receipt attributes a violation to only one,
+   that is informative about predicate separation (see preregistration H3).
+2. It cannot be satisfied by editing a field. An opaque window ID is whatever the
+   declaring party says it is; a timestamp is checkable against the receipt's own
+   temporal window and against the parent's declared value.
+3. It admits a **near-boundary** case. A separation of 11h59m is a violation and 12h01m
+   is not, from otherwise identical inputs. A gate that HOLDs on both is not evaluating
+   the predicate, merely reacting to the shape of the input.
+
+**Why this is the test.** The violating execution is *locally valid*. Session N in
+isolation satisfies every within-execution check: its input digest resolves, its schema
+validates, its decode completes, its output is well-formed. It is illegal only in relation
+to session N-1.
+
+A per-execution admission gate that does not retain session N-1 will PERMIT. SCQOS claims
+to carry Continuity across the lifecycle rather than performing an isolated pre-execution
+check. Under that claim, the required decision is **HOLD**.
+
+#### 5.1.2 Stratification fields — declared, not admitted
+
+```
+calibration_stratum := "stale" if calibration_age_hours >= 24 else "fresh"
+```
+
+`calibration_age_hours` and `calibration_stratum` are carried in the input artifact and
+bound by the receipt, but they are **not** admission predicates. No value of either
+causes HOLD.
+
+They are declared for a reason that matters to this test: they establish that a field can
+be *material to the experiment* without being *material to admission*. A substrate that
+holds on a stratification field is over-reaching; one that fails to bind it in the receipt
+is under-recording. Both are findings, and neither is visible unless the distinction is
+declared in advance.
+
+Any sensitivity analysis over these strata belongs to the experimental protocol, not to
+this contract, and is out of scope for the conformance study.
+
+#### 5.1.3 Additional lineage requirements
 
 ```
 REQUIRED: parent_receipt_id resolves to an admitted receipt of the same capability_id
@@ -292,6 +372,8 @@ correspondence: identical declared inputs, policy version, and canonicalization 
 same admissibility logic, decision semantics, and independently verifiable evidence. The
 reproducer does not need SC-Engineering, the author, or any live quantum device.
 
+0. Note that admission depends on `collection_start` values in two artifacts (this
+   session and its parent). A reproducer must obtain both, or the parent's receipt.
 1. Obtain the input artifact by digest.
 2. Obtain the capability source tree and decode table by digest; verify both.
 3. Run the capability offline; confirm `qec_decode_summary` matches byte-for-byte.

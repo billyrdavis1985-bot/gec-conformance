@@ -1,13 +1,28 @@
 # Preregistration — Independent Conformance Test of a Governed-Execution Substrate
 
 **protocol_id:** `gec-conformance`
-**protocol_version:** `1.0.0`
+**protocol_version:** `1.1.0`
 **subject system:** SCQOS (SC-Engineering)
-**capability under contract:** `qec-syndrome-decode v1.0.0`, contract digest recorded at freeze
+**capability under contract:** `qec-syndrome-decode v1.1.0`, contract digest recorded at freeze
 **author:** Billy R. Davis Jr., Hudson Forge Technologies LLC
 **status:** REGISTERED PRIOR TO EXECUTION — no case, prediction, or criterion below may be
 edited after registration; changes are appended as dated deviations (§9)
 **registration venue:** OSF (DOI recorded on registration)
+
+---
+
+## Revision note — 1.0.0 to 1.1.0
+
+Tracks contract 1.1.0, in which the governing invariant became a minimum temporal
+separation between sessions rather than a calibration-window-identity rule (contract
+§5.1.1 records why). Neither version was registered and no case was executed, so nothing
+is invalidated.
+
+Case changes: C06 restated in terms of separation. Three cases added — C22 (near-boundary
+violation), C23 (near-boundary compliance), C24 (stratification field must not trigger
+HOLD). Declared set is now 24 cases; phase 1 grows from 8 to 11. The near-boundary pair
+and the over-reach control were not constructible under the previous predicate, which is
+part of why the new one is a better test article.
 
 ---
 
@@ -73,7 +88,7 @@ Stated as SC-Engineering stated them, so the result is measured against the actu
 
 **H1 — Cross-execution continuity.** SCQOS carries Continuity across executions, not as an
 isolated pre-execution check. A state that is locally valid but illegal only in relation to
-its predecessor must HOLD.
+its predecessor must HOLD — and a state that is compliant by two minutes must not.
 
 **H2 — Mediating enforcement.** SCQOS is out-of-process mediating, not advisory. A capability
 inside the governed boundary possesses no alternate execution lane; an undeclared consequence
@@ -131,6 +146,13 @@ be read as post-hoc selection.
 | C03 | Non-semantic reordering of fields in the declared input | PERMIT | none fail |
 | C04 | Session 3 following a session 2 that was HELD and legitimately requalified | PERMIT | none fail |
 | ● C05 | Serialization variance pair: identical semantics, differing byte encoding | PERMIT both, **identical decision and identical digest** | none fail |
+| ● C24 | `calibration_stratum` = "stale", separation compliant | PERMIT | none fail |
+
+C24 is an over-reach control. `calibration_age_hours` and `calibration_stratum` are
+declared in the contract and bound by the receipt but are explicitly **not** admission
+predicates (contract §5.1.2). A HOLD here means the substrate is gating on a field the
+contract did not make material — a failure mode distinct from missing a real violation,
+and one that no violation-detection case can surface.
 
 C05 is simultaneously the canonicalization test (H4) and a negative control (H5).
 
@@ -138,13 +160,24 @@ C05 is simultaneously the canonicalization test (H4) and a negative control (H5)
 
 | ID | Case | Predicted | Predicate |
 |---|---|---|---|
-| ● C06 | Session 2 declares a calibration window identical to session 1 | HOLD | I2, possibly I4 |
+| ● C06 | Session 2 collected 3h after session 1, well inside the 12h minimum | HOLD | I2 and/or I1 |
 | ● C07 | Declared parent receipt absent from governance state | HOLD | I2 |
 | C08 | Session 2 submitted claiming fresh genesis, no parent declared | HOLD | I4 |
 | ● C09 | Two executions submitted concurrently against the same parent | exactly one PERMIT, one HOLD-or-re-evaluate | I2 (+I1) |
 | C10 | Session 1's contract and inputs replayed as session 2 | HOLD | I2, I6 |
 | C11 | Fabricated ancestry: a self-asserted session-1 record claimed as parent | HOLD | I4, I6 |
 | C12 | Content-address collision: byte-identical declared state as a distinct session | HOLD | I2, I6 |
+| ● C22 | Near-boundary violation: separation of 11h59m | HOLD | I2 and/or I1 |
+| ● C23 | Near-boundary compliance: separation of 12h01m, otherwise identical to C22 | PERMIT | none fail |
+
+C22 and C23 are a matched pair differing by two minutes of declared time. They are the
+sharpest instrument in the matrix: a gate that HOLDs on both is not evaluating the
+predicate, only reacting to the shape of the input, and a gate that PERMITs both is not
+evaluating it either. Only a correct split on this pair demonstrates that the substrate
+computes the capability's rule rather than pattern-matching a violation.
+
+Both target I2 Continuity and I1 Time jointly, since the predicate is temporal. Which
+predicate the receipt reports as failing is scored, not assumed — see H3.
 
 C11 tests a surface introduced by the answer to blocker 2. Lineage state being persistent and
 content-addressed protects retrieved records from tampering; it says nothing about what may be
@@ -208,12 +241,14 @@ the surrounding language implies.
 
 ## 6. Phase structure
 
-**Phase 1 (8 cases):** C01, C02, C05, C06, C07, C09, C13, C18.
+**Phase 1 (11 cases):** C01, C02, C05, C06, C07, C09, C13, C18, C22, C23, C24.
 
 Chosen for coverage of every hypothesis at least once, and for cost. C09 and C18 were promoted
 from the deferred set after the answers to blockers 1 and 3 made them directly falsifiable.
+C22/C23 and C24 enter with contract 1.1.0 and are cheap: they reuse the C06 fixture with
+one field altered.
 
-**Phase 2 (13 cases):** the remainder, executed on the same pin or on a newly recorded pin per §1.
+**Phase 2 (14 cases):** the remainder, executed on the same pin or on a newly recorded pin per §1.
 
 Phase 1 results are published whether or not phase 2 occurs. Phase 2 is not a condition of
 reporting.
@@ -226,7 +261,7 @@ Fixed in advance. Each is a single-case criterion; no aggregate score can rescue
 
 | Claim | Falsified if |
 |---|---|
-| H1 | C06 returns PERMIT |
+| H1 | C06 returns PERMIT, **or** C22 and C23 receive the same decision |
 | H2 | C18 goes undetected, or C17/C19 produce their consequence before any HOLD |
 | H3 | I2, I4 and I7 co-fire on 100% of C06–C12 with substantively identical evidence payloads |
 | H4 | Clean-room and SCQOS canonicalization disagree on any byte in C05 |

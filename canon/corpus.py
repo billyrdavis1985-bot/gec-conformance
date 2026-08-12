@@ -339,6 +339,23 @@ CORPUS: tuple[Case, ...] = (
         ("high-value", "scqos"),
     ),
     Case(
+        "PKT-03",
+        Q_STRUCT,
+        "collection_start: same instant, offset vs Z encoding",
+        {
+            "a": {"collection_start": "2026-08-07T02:21:59Z"},
+            "b": {"collection_start": "2026-08-06T22:21:59-04:00"},
+        },
+        "Under contract 1.1.0 the admission predicate is a difference between two "
+        "collection_start values. These two encode the same instant. If they "
+        "canonicalize differently, two byte-distinct states express one temporal "
+        "fact, and a substrate comparing declared strings rather than instants "
+        "will reach different admission decisions for the same experiment. The "
+        "contract pins the format for exactly this reason; the case is retained "
+        "to demonstrate what the pinning prevents.",
+        ("high-value", "scqos"),
+    ),
+    Case(
         "STR-03",
         Q_STRUCT,
         "Realistic receipt-shaped document",

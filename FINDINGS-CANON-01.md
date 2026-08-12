@@ -18,7 +18,7 @@ The specification answers five of the eight canonicalization questions cleanly a
 leaves three open. The three open questions are not exotic: they govern how a
 float, a large integer, and a non-BMP key are rendered. I implemented two readings
 of the same specification, differing **only** where the text is silent. Both are
-faithful. They produce different canonical bytes on **9 of 32** corpus cases,
+faithful. They produce different canonical bytes on **9 of 33** corpus cases,
 including on a well-formed universal packet using the declared schema.
 
 Because the two implementations agree everywhere the specification is explicit,
@@ -155,6 +155,14 @@ can generate the same bytes at all:
   constraint on precision or timezone encoding. `2026-08-09T14:32:07Z` and
   `2026-08-09T14:32:07.000+00:00` are the same instant and different bytes
   (corpus PKT-02). Suggest requiring RFC 3339 with fixed precision and `Z`.
+
+  This one is no longer only hygienic. Under contract 1.1.0 the governing
+  invariant is a **temporal separation** between sessions, so a timestamp field
+  is now admission-critical. Two encodings of one instant that canonicalize
+  differently mean a substrate comparing declared strings rather than instants
+  can reach different admission decisions for the same experiment (corpus
+  PKT-03). The contract pins its own `collection_start` format for that reason;
+  `created_at` is on your side of the boundary and still open.
 - **Duplicate keys are unaddressed.** A default JSON parser silently keeps the
   last occurrence, *before* canonicalization can observe it. A producer could
   therefore emit a document whose canonical form does not reflect what a reader
