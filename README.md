@@ -32,6 +32,7 @@ comparison. A disagreement is only a finding if it was reached without looking.
       fixtures.py      phase 1 fixtures — real parent, synthetic successors
       runner.py        execution and scorecard
       mocks.py         substrates with known defects, for validating the harness
+      divergence.py    first-divergence locator — halts at the first unequal stage
     canon/
       ruleset.py       decisions as explicit configuration — no defaults anywhere
       numbers.py       ES6 Number::toString (ECMA-262 6.1.6.1.20)
@@ -80,7 +81,7 @@ the build.
 
 ## Usage
 
-    python3 -m unittest discover -s tests     # 115 tests
+    python3 -m unittest discover -s tests     # 131 tests
     python3 -m unittest tests.test_rfc8785_vectors -v   # official RFC vectors
     python3 cli.py rulesets                   # every ruleset and its decisions
     python3 cli.py corpus --high-value        # the discriminating cases
@@ -150,6 +151,33 @@ Two rows carry the argument for how scoring is defined:
 Aliasing is detected by evidence, not co-firing: the aliased mock fires I2, I4
 and I7 together with **one** distinct evidence payload, while the correct mock
 fires I2 alone.
+
+## First-divergence locator
+
+Implements the agreed protocol: when two independent implementations diverge, do
+not reconcile them — preserve the divergence and walk backward to the first
+unequal state. Stages, in causal order:
+
+    canonical bytes -> digest -> predicate evaluations -> decision
+                    -> consequence -> receipt
+
+Two properties make it a tool rather than a discipline:
+
+- **Halt-on-first.** Comparison stops at the first unequal stage; downstream
+  stages report NOT_REACHED, never FAIL. A digest difference caused by a
+  canonical-byte difference is not an independent finding, and reporting it as
+  one inflates a single defect into six.
+- **No reconciliation path.** No merge, no prefer, no tolerance parameter. A
+  test asserts the module exposes no such surface. The tool can report where two
+  runs first disagree; nothing in it can make them agree.
+
+Predicate comparison includes evidence, not just results. Two runs agreeing on
+which predicates failed while citing different evidence have diverged — evidence
+is what distinguishes independent predicates from aliases, so dropping it would
+hide the H3 signal.
+
+A refusal is a state, not an absence: one implementation refusing where another
+emits is a divergence at that stage.
 
 ## Status
 
