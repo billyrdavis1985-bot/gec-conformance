@@ -28,6 +28,10 @@ comparison. A disagreement is only a finding if it was reached without looking.
       decode.py        the capability itself
     verifier/
       receipt.py       clean-room receipt verifier (signature step blocked)
+    harness/
+      fixtures.py      phase 1 fixtures — real parent, synthetic successors
+      runner.py        execution and scorecard
+      mocks.py         substrates with known defects, for validating the harness
     canon/
       ruleset.py       decisions as explicit configuration — no defaults anywhere
       numbers.py       ES6 Number::toString (ECMA-262 6.1.6.1.20)
@@ -76,7 +80,7 @@ the build.
 
 ## Usage
 
-    python3 -m unittest discover -s tests     # 85 tests
+    python3 -m unittest discover -s tests     # 115 tests
     python3 -m unittest tests.test_rfc8785_vectors -v   # official RFC vectors
     python3 cli.py rulesets                   # every ruleset and its decisions
     python3 cli.py corpus --high-value        # the discriminating cases
@@ -120,10 +124,38 @@ discriminates rather than passing vacuously.
 This matters for attribution: a divergence found against a subject specification
 can be charged to that specification rather than to a defect in the baseline.
 
+## Harness validation
+
+The scorecard is validated against six mock substrates with known behaviour,
+because a clean phase 1 result is uninterpretable unless the instrument is known
+to discriminate. Each defect produces a distinguishable signature:
+
+| Mock | Predicate | Decision | TP | FP |
+|---|---|---|---|---|
+| correct | 9/9 | 9/9 | 4/4 | 0/5 |
+| per-execution only (H1 failure) | 5/9 | 5/9 | 0/4 | 0/5 |
+| paranoid, holds everything (H5) | 3/9 | 4/9 | 4/4 | 5/5 |
+| misattributing (right decision, wrong predicate) | 5/9 | 8/9 | 3/4 | 0/5 |
+| aliased I2/I4/I7 (H3) | 8/9 | 8/9 | 3/4 | 0/5 |
+
+Two rows carry the argument for how scoring is defined:
+
+- **Paranoid** catches every violation (TP 4/4) and is worthless (FP 5/5).
+  Violation-only scoring would rate it perfect, which is why the false-positive
+  rate is reported unconditionally and cannot be omitted from `summary()`.
+- **Misattributing** scores 8/9 on decisions and 5/9 on predicates. It reaches
+  the right verdict for the wrong reason, and only predicate-level scoring sees
+  it. That is why the primary outcome is predicate agreement.
+
+Aliasing is detected by evidence, not co-firing: the aliased mock fires I2, I4
+and I7 together with **one** distinct evidence payload, while the correct mock
+fires I2 alone.
+
 ## Status
 
 Complete: engine, rulesets, corpus, differ, capability, decode table, determinism
-self-test, receipt verifier (three of four §8.3 steps).
+self-test, receipt verifier (three of four §8.3 steps), phase 1 fixtures and
+harness.
 
 Blocked: signature validation, pending an algorithm and key format (finding
 CANON-02). It reports UNVERIFIABLE rather than passing, so a receipt clearing every
