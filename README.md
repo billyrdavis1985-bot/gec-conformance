@@ -23,6 +23,11 @@ comparison. A disagreement is only a finding if it was reached without looking.
 
 ## Architecture
 
+    capability/        qec-syndrome-decode 1.1.0 — deterministic offline decode
+      table.py         total decode table, exhaustive matching, integer weights
+      decode.py        the capability itself
+    verifier/
+      receipt.py       clean-room receipt verifier (signature step blocked)
     canon/
       ruleset.py       decisions as explicit configuration — no defaults anywhere
       numbers.py       ES6 Number::toString (ECMA-262 6.1.6.1.20)
@@ -71,7 +76,7 @@ the build.
 
 ## Usage
 
-    python3 -m unittest discover -s tests     # 39 tests
+    python3 -m unittest discover -s tests     # 85 tests
     python3 -m unittest tests.test_rfc8785_vectors -v   # official RFC vectors
     python3 cli.py rulesets                   # every ruleset and its decisions
     python3 cli.py corpus --high-value        # the discriminating cases
@@ -117,8 +122,12 @@ can be charged to that specification rather than to a defect in the baseline.
 
 ## Status
 
-Engine, rulesets, corpus, differ, and tests are complete and independent of any
-external input. Pending: the subject specification, which becomes one more entry
-in `rulesets/`.
+Complete: engine, rulesets, corpus, differ, capability, decode table, determinism
+self-test, receipt verifier (three of four §8.3 steps).
+
+Blocked: signature validation, pending an algorithm and key format (finding
+CANON-02). It reports UNVERIFIABLE rather than passing, so a receipt clearing every
+other check still returns INCOMPLETE — the gap stays visible in the record instead
+of being laundered into a green result.
 
 License and ownership per the terms of record in the capability contract §12.
