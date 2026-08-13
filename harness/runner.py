@@ -78,6 +78,7 @@ class CaseResult:
     verification_unverifiable: list[str] = field(default_factory=list)
     predicate_evidence: dict[str, list] = field(default_factory=dict)
     executed: bool = False
+    variant_agrees: bool | None = None  # C05 only: encoding variant matched
     note: str = ""
 
     @property
@@ -89,6 +90,11 @@ class CaseResult:
         return self.actual_decision == self.predicted_decision
 
     @property
+    def variant_ok(self) -> bool:
+        """True unless an encoding variant was run and disagreed."""
+        return self.variant_agrees is not False
+
+    @property
     def predicate_agrees(self) -> bool:
         """Primary outcome: did the predicted failing predicate actually fail?
 
@@ -98,6 +104,8 @@ class CaseResult:
         """
         if not self.executed:
             return False
+        if not self.variant_ok:
+            return False  # encoding variance is part of what C05 asserts
         if not self.predicted_predicates:
             return not self.actual_failing
         return bool(set(self.predicted_predicates) & set(self.actual_failing))
@@ -161,6 +169,30 @@ class Harness:
 
         result.executed = True
         result.actual_decision = receipt.get("decision")
+
+        # C05: resubmit the alternate encoding. Same values, different bytes.
+        # Decision AND state digest must both match, or the substrate is
+        # hashing what it received rather than what it canonicalized.
+        if fixture.variant_bytes is not None:
+            variant = self.adapter.submit(
+                fixture.case_id + "-variant", fixture.variant_bytes, None
+            )
+            if variant is None:
+                result.note = "encoding variant produced no receipt"
+            else:
+                same_decision = variant.get("decision") == receipt.get("decision")
+                same_state = variant.get("state_digest") == receipt.get("state_digest")
+                result.variant_agrees = same_decision and same_state
+                if not same_decision:
+                    result.note = (
+                        f"encoding variant decided {variant.get('decision')} vs "
+                        f"{receipt.get('decision')} — canonicalization not applied"
+                    )
+                elif not same_state:
+                    result.note = (
+                        "encoding variant produced a different state digest — "
+                        "submitted bytes hashed instead of canonical bytes"
+                    )
 
         predicates = self.verifier._predicate_map(receipt)
         result.actual_failing = tuple(

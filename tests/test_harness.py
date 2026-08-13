@@ -233,3 +233,32 @@ class TestReportingDiscipline(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class TestHarnessDetectsLiteralByteHashing(unittest.TestCase):
+    """C05: a substrate hashing submitted bytes rather than canonical bytes."""
+
+    def setUp(self):
+        from harness.mocks import LiteralByteHasher
+
+        self.h = run_against(LiteralByteHasher)
+
+    def test_c05_variant_disagreement_is_caught(self):
+        c05 = result_for(self.h, "C05")
+        self.assertFalse(c05.variant_agrees)
+        self.assertIn("state digest", c05.note)
+
+    def test_c05_fails_predicate_agreement_despite_correct_decision(self):
+        c05 = result_for(self.h, "C05")
+        self.assertEqual(c05.actual_decision, "PERMIT")  # decision is right
+        self.assertTrue(c05.decision_agrees)
+        self.assertFalse(c05.predicate_agrees)  # but the case still fails
+
+    def test_every_other_case_looks_clean(self):
+        """The defect is invisible outside C05 — why the case exists."""
+        others = [r for r in self.h.results if r.executed and r.case_id != "C05"]
+        self.assertTrue(all(r.predicate_agrees for r in others))
+
+    def test_correct_substrate_passes_the_variant(self):
+        h = run_against(CorrectSubstrate)
+        self.assertTrue(result_for(h, "C05").variant_agrees)

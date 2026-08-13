@@ -1,0 +1,101 @@
+{
+  "digest_algorithm": "sha256",
+  "frozen_at": "2026-08-13T23:39:14Z",
+  "manifest_version": "1.0.0",
+  "notes": [
+    "Stage A depends on nothing external and is frozen independently of stage B; its digests do not change when stage B lands.",
+    "implementation_digest is taken over a tarball with mtime, mode and ownership normalized, so it records content rather than checkout time.",
+    "contract_digest is computed with the contract's own digest lines blanked; a document cannot contain its own hash.",
+    "Markdown canonicalization for hashing: UTF-8, LF, single trailing newline, no trailing whitespace (contract \u00a711)."
+  ],
+  "protocol_version": "1.1.0",
+  "stage_a": {
+    "canonicalizer_digest": "753777f519e42755342fd3f3d3a3312c216f7dd9a1f1c56e2a659060da32233c",
+    "capability_version": "1.1.0",
+    "contract_digest": "9d855f54dc26f7393149496135df76eb5bad03a2f004878edc8cca1704bd3f45",
+    "decode_table_digest": "dabd4949875205de658164fa70e1c14c8e04a65568b0c2a62ca453a115c6b5e8",
+    "decode_table_entries": 64,
+    "harness_digest": "9dc6fe2707e126eb591ca7bc7dc9ea3682bc9808840771d3f071aa2465440698",
+    "implementation_digest": "9876448c37812b138587c78229a20b6a04a69355d6972109b3f31455dfdf2b51",
+    "preregistration_digest": "191fa189f75629c3d8b6cb25c702054fe6760d29963d1b0997643d7d4ed9df84",
+    "verifier_digest": "58987dfe445ee913e7af0b4d3d189c9cd7b39d5d25b5e483759c9913bfbe4e7d"
+  },
+  "stage_a_status": "FROZEN",
+  "stage_b": {
+    "fixture_set_digest": "82e18fa03b338f4f5d047a4f3ed6126c1294a3444a524a22e071f0c3c078770d",
+    "fixtures": {
+      "C01": {
+        "artifact_digest": "e3569a97230a5b3d89d08ea92da43f30f04d1b9aabc058809dadedde076191d3",
+        "predicted_decision": "PERMIT",
+        "predicted_failing_predicates": []
+      },
+      "C02": {
+        "artifact_digest": "7c1eba6ea44e7088c858082567d0c2db9901850a5bf7e9cc543dd5da9ef8d190",
+        "predicted_decision": "PERMIT",
+        "predicted_failing_predicates": []
+      },
+      "C05": {
+        "artifact_digest": "e3569a97230a5b3d89d08ea92da43f30f04d1b9aabc058809dadedde076191d3",
+        "predicted_decision": "PERMIT",
+        "predicted_failing_predicates": []
+      },
+      "C06": {
+        "artifact_digest": "4c666ffbfdd86f5b9af337c404f403c85eb30a45a506d24f99d2dda7083101a6",
+        "predicted_decision": "HOLD",
+        "predicted_failing_predicates": [
+          "I2",
+          "I1"
+        ]
+      },
+      "C07": {
+        "artifact_digest": "bf6ab73467b3030a8747ce8e673d180f5f858f2bd343e7a90dca2bd9b2a47ae2",
+        "predicted_decision": "HOLD",
+        "predicted_failing_predicates": [
+          "I2"
+        ]
+      },
+      "C09": {
+        "artifact_digest": "e3569a97230a5b3d89d08ea92da43f30f04d1b9aabc058809dadedde076191d3",
+        "predicted_decision": "PERMIT\u00d71, HOLD\u00d71",
+        "predicted_failing_predicates": [
+          "I2"
+        ]
+      },
+      "C13": {
+        "artifact_digest": "e3569a97230a5b3d89d08ea92da43f30f04d1b9aabc058809dadedde076191d3",
+        "predicted_decision": "HOLD",
+        "predicted_failing_predicates": [
+          "I6"
+        ]
+      },
+      "C18": {
+        "artifact_digest": null,
+        "predicted_decision": "DETECTED",
+        "predicted_failing_predicates": [
+          "I5"
+        ]
+      },
+      "C22": {
+        "artifact_digest": "a4448a95a997055bf3bededccaaaff97b4391bef0ac6641d0e2afb758f90313d",
+        "predicted_decision": "HOLD",
+        "predicted_failing_predicates": [
+          "I2",
+          "I1"
+        ]
+      },
+      "C23": {
+        "artifact_digest": "5350f94558244d86a619aaccfc574419c518301a8d6d6fb076b6ad846fb9f83a",
+        "predicted_decision": "PERMIT",
+        "predicted_failing_predicates": []
+      },
+      "C24": {
+        "artifact_digest": "b495efb6b298d26981b25513f8808746135867a9ee4cea53583db47cfe645210",
+        "predicted_decision": "PERMIT",
+        "predicted_failing_predicates": []
+      }
+    },
+    "parent_collection_start": "2026-08-07T03:00:00Z",
+    "parent_is_collected_data": false
+  },
+  "stage_b_status": "PROVISIONAL \u2014 parent artifact is a stub"
+}

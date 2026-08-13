@@ -95,6 +95,14 @@ class Fixture:
     synthetic: bool
     note: str
     requires_substrate: bool = False  # cannot be fixtured offline
+    variant_bytes: bytes | None = None
+    """A second, semantically identical encoding of the same artifact.
+
+    C05 tests whether two byte-different encodings of one value set produce the
+    same decision AND the same state digest. That cannot be expressed by a
+    single artifact — the variance lives in the encoding, not the values. The
+    harness submits both and compares."""
+
     declared_digest_override: str | None = None
     """Digest to DECLARE at submission, when it must differ from the real bytes.
 
@@ -109,6 +117,21 @@ class Fixture:
         return json.dumps(
             self.artifact, sort_keys=True, separators=(",", ":"), ensure_ascii=False
         ).encode("utf-8")
+
+
+def _alternate_encoding(state: dict) -> bytes:
+    """Encode the same values with deliberately different bytes.
+
+    Reversed key order, whitespace between tokens, ASCII-escaped non-ASCII.
+    Every difference is one a conforming canonicalizer must erase; none changes
+    a single value. If a substrate's state digest moves between this and the
+    primary encoding, it is hashing what it received rather than what it
+    canonicalized.
+    """
+    reordered = {key: state[key] for key in sorted(state, reverse=True)}
+    return json.dumps(
+        reordered, indent=1, separators=(" ,", " : "), ensure_ascii=True
+    ).encode("utf-8")
 
 
 def successor(parent: dict, offset: timedelta, **overrides) -> dict:
@@ -152,13 +175,18 @@ def build_phase1(parent: dict) -> list[Fixture]:
         "from one that reacts to any change in input bytes.",
     ))
 
+    c05_state = successor(parent, compliant)
     fixtures.append(Fixture(
         "C05", "Serialization variance pair, identical semantics",
-        successor(parent, compliant),
+        c05_state,
         "PERMIT", (), True,
-        "Submitted twice with differing byte encodings of the same value set. "
-        "Both must yield the same decision AND the same state digest. This is "
-        "the canonicalization test (H4) and a negative control at once.",
+        note="Submitted twice with differing byte encodings of the same value "
+        "set: reversed key order, whitespace between tokens, and non-ASCII "
+        "escaping. Both must yield the same decision AND the same state digest. "
+        "This is the canonicalization test (H4) and a negative control at once. "
+        "If the two encodings produce different state digests, the substrate is "
+        "hashing submitted bytes rather than canonical bytes.",
+        variant_bytes=_alternate_encoding(c05_state),
     ))
 
     stale = successor(parent, compliant, calibration_stratum="stale",
@@ -280,6 +308,7 @@ def write_fixtures(destination: Path) -> tuple[list[Fixture], bool]:
             "synthetic_successor": fixture.synthetic,
             "requires_live_substrate": fixture.requires_substrate,
             "declared_digest_override": fixture.declared_digest_override,
+            "has_encoding_variant": fixture.variant_bytes is not None,
             "note": fixture.note,
         }
         if fixture.artifact is not None:

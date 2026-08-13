@@ -104,6 +104,24 @@ Specifically, I2 Continuity, I4 Genesis, and I7 Causality are operationally dist
 **H4 — Verification independence.** The receipt is independently verifiable: canonicalization
 is specified precisely enough that a clean-room implementation produces byte-identical output.
 
+> **Interpretation limit, recorded before execution.** If the frozen specification names a
+> published standard (RFC 8785, RFC 7493, RFC 3339, RFC 8032), agreement between two
+> implementations of that standard is **weak evidence**: it shows a standard was adopted, not
+> that the specification is precise. Bespoke rules are where divergence is informative. A
+> post-freeze convergence result must not be reported as though it were the same finding as
+> convergence against bespoke rules.
+>
+> A second consequence: any rebuild after round one is **not clean-room in the round-one
+> sense**. The implementer retains the prior implementation and knowledge of which readings
+> were chosen at each open point. The informative test after a freeze is therefore not
+> "do two implementations agree" but **"does the frozen universe eliminate the specific
+> degrees of freedom found in round one"** — asserted by the spec-closure check, which
+> requires that the two round-one readings can no longer both satisfy it.
+>
+> Convergence is also not correctness. Agreement through the chain proves agreement on
+> representation; it does not show the governance model is right. C22 and C23 could converge
+> on every byte and both be permitted. The case matrix remains the substantive test.
+
 **H5 — Selectivity.** The gate discriminates. It does not achieve its violation-detection rate
 by holding broadly.
 

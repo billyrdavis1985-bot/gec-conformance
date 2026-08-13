@@ -51,6 +51,18 @@ def _predicates(failing: tuple[str, ...], evidence_by: dict | None = None) -> li
     ]
 
 
+def _canonical_state_digest(state: dict) -> str:
+    """Digest over canonicalized values, not over submitted bytes.
+
+    A substrate that hashes what it received would return different digests for
+    two encodings of the same state — which is exactly what C05 detects.
+    """
+    stripped = {k: v for k, v in state.items() if not k.startswith("_")}
+    return hashlib.sha256(
+        json.dumps(stripped, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
 def _receipt(case_id: str, state: dict, decision: str, predicates: list[dict],
              input_digest: str = "0" * 64) -> dict:
     return {
@@ -59,7 +71,7 @@ def _receipt(case_id: str, state: dict, decision: str, predicates: list[dict],
         "capability_id": "qec-syndrome-decode",
         "capability_version": "1.1.0",
         "policy_version": "mock",
-        "state_digest": f"state-{case_id}",
+        "state_digest": _canonical_state_digest(state),
         "parent_state_digest": PARENT_DIGEST if state.get("session_index", 1) > 1 else None,
         "input_digest": input_digest,
         "environment_digest": "1" * 64,
@@ -193,3 +205,33 @@ class DefaultPermitGate(_Base):
         if not self._separation_ok(state):
             return _receipt(case_id, state, "HOLD", _predicates(("I1", "I2")))
         return _receipt(case_id, state, "PERMIT", _predicates(()))
+
+
+class LiteralByteHasher(_Base):
+    """Hashes the bytes it received rather than the canonical form.
+
+    The C05 failure. Every decision is correct; the defect is only visible when
+    the same state arrives under two encodings and the state digests differ.
+    No violation case can surface this, because a single submission never
+    exercises the comparison.
+    """
+
+    name = "mock: hashes submitted bytes"
+
+    def submit(self, case_id, artifact_bytes, declared_digest=None):
+        state = self._state(artifact_bytes)
+        if state is None:
+            return None
+        # Correct in every other respect — the mock must carry exactly one
+        # defect, or a failure cannot be attributed to it.
+        if declared_digest is not None and declared_digest != _digest(artifact_bytes):
+            return _receipt(case_id, state, "HOLD", _predicates(("I6",)),
+                            input_digest=declared_digest)
+        decision = "PERMIT"
+        predicates_ = _predicates(())
+        if not self._ancestry_ok(state) or not self._separation_ok(state):
+            decision, predicates_ = "HOLD", _predicates(("I1", "I2"))
+        receipt = _receipt(case_id, state, decision, predicates_)
+        # The one defect: digest over received bytes, not canonicalized values.
+        receipt["state_digest"] = _digest(artifact_bytes)
+        return receipt
