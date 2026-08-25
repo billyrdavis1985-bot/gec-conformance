@@ -1,9 +1,55 @@
-# gec-canon — canonicalization differential rig
+# gec-conformance
 
-Part of the `gec-conformance` protocol. Independent implementation, authored
-without access to SCQOS source.
+**A preregistered conformance protocol for governed-execution claims.**
 
-## Why this exists
+[![DOI](https://zenodo.org/badge/DOI/PENDING.svg)](https://doi.org/PENDING)
+OSF preregistration: PENDING · License: MIT
+
+Systems that claim to govern execution — admitting or holding state transitions
+against declared invariants — are hard to evaluate honestly. Both the evaluator
+and the system's authors have an interest in the outcome, and both can reason
+after the fact about whether a decision was made *for the right reason*.
+
+This protocol removes that freedom. An independently authored capability runs
+through the substrate under a contract frozen and hashed in advance. Benign
+perturbations and deliberate violations are injected. The substrate's decision
+**and its stated reason** are compared against predictions locked before
+execution and registered publicly.
+
+Two scoring commitments follow from that, and both are enforced in code rather
+than left to the person writing the report:
+
+- **Predicate-level agreement is primary.** A system can reach the correct
+  decision by the wrong route; decision agreement cannot tell the difference.
+  A mock substrate that blames the wrong invariant scores 8/9 on decisions and
+  5/9 on predicates.
+- **False-positive rate is reported unconditionally.** A gate that holds on
+  everything catches every violation and is worthless. `summary()` cannot be
+  called in a way that omits it.
+
+The subject of the first application is SCQOS (SC-Engineering). The governing
+invariant under test belongs to the *capability*, not the substrate: a minimum
+temporal separation between experimental collection sessions, drawn from a
+quantum error-correction protocol. The substrate is asked to carry a rule it did
+not author, across executions it does not own.
+
+The protocol is reusable against any system making governed-execution claims.
+Its value does not depend on the outcome of that first application.
+
+## Status
+
+Two specification-boundary findings are recorded and accepted by the subject
+system's author: [CANON-01](FINDINGS-CANON-01.md) (the specification admitted
+multiple faithful implementations — 9 of 33 corpus cases diverged between two
+honest readings) and [CANON-02](FINDINGS-CANON-02.md) (no signature algorithm or
+key format specified, so one of four verification steps cannot be performed).
+
+Both freeze stages are complete. Execution is pending the subject system's
+frozen representation layer, signature profile, adapter contract, and pin table.
+
+---
+
+## Why the canonicalizer exists
 
 A receipt asserts `input_digest = abc123…`. Verifying that independently means
 hashing the input yourself and comparing. But hashing needs bytes, and the same
@@ -179,15 +225,46 @@ hide the H3 signal.
 A refusal is a state, not an absence: one implementation refusing where another
 emits is a divergence at that stage.
 
-## Status
+## Reproducing
 
-Complete: engine, rulesets, corpus, differ, capability, decode table, determinism
-self-test, receipt verifier (three of four §8.3 steps), phase 1 fixtures and
-harness.
+    git clone https://github.com/billyrdavis1985-bot/gec-conformance
+    cd gec-conformance
+    python3 -m unittest discover -s tests          # 136 tests, no dependencies
+    python3 cli.py diff scqos_literal scqos_es6 -v # reproduce CANON-01
+    python3 protocol/freeze.py                     # recompute every digest
 
-Blocked: signature validation, pending an algorithm and key format (finding
-CANON-02). It reports UNVERIFIABLE rather than passing, so a receipt clearing every
-other check still returns INCOMPLETE — the gap stays visible in the record instead
-of being laundered into a green result.
+Standard library only. No install step.
 
-License and ownership per the terms of record in the capability contract §12.
+The freeze digests are reproducible by construction: the implementation tarball
+normalizes mtime, mode and ownership, so `implementation_digest` records content
+rather than checkout time. `contract_digest` is computed with the contract's own
+digest lines blanked, since a document cannot contain its own hash.
+
+## Data provenance
+
+The conformance study's parent and compliant-successor artifacts are extracted
+from published QEC-P1 session data (DOI 10.5281/zenodo.22050536): sessions 11
+and 12 on `ibm_marrakesh`, separated by 13.74 hours of real collection time — a
+separation produced by queue scheduling rather than constructed, which satisfies
+the contract's ≥12h admission predicate on its own.
+
+Case C01, the primary negative control, is therefore real end to end: collected
+parent, collected successor, real separation, real syndrome data, real decode.
+Violating cases use synthetic successors, because no collected pair exists at 3h
+or 11h59m and none should be manufactured on hardware to create one. Every
+synthetic artifact is labelled in its own bytes, and a test asserts the label
+tracks reality in both directions.
+
+## Layout
+
+    protocol/     contract, preregistration, freeze tool and manifest
+    capability/   qec-syndrome-decode — the capability under contract
+    canon/        rule-agnostic canonicalization engine and corpus
+    verifier/     clean-room receipt verifier
+    harness/      fixtures, runner, mock substrates, divergence locator
+    fixtures/     frozen input artifacts
+    tests/        136 tests
+
+License MIT. Author's code and experimental data remain the author's; adapter,
+contract and receipt artifacts may be used by SC-Engineering; the author retains
+the right to publish findings, positive or negative.

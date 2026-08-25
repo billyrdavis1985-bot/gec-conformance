@@ -1,0 +1,57 @@
+cff-version: 1.2.0
+title: >-
+  gec-conformance: A Preregistered Conformance Protocol for
+  Governed-Execution Claims
+message: >-
+  If you use this protocol or its instruments, please cite it using
+  the metadata below.
+type: software
+authors:
+  - given-names: Billy
+    family-names: Davis
+    name-suffix: Jr.
+    affiliation: Hudson Forge Technologies LLC
+    orcid: 'https://orcid.org/0009-0000-4807-5851'
+repository-code: >-
+  https://github.com/billyrdavis1985-bot/gec-conformance
+abstract: >-
+  A preregistered conformance protocol for evaluating systems that
+  claim to govern execution by admitting or holding state transitions
+  against declared invariants. An independently authored capability is
+  executed through the substrate under a contract frozen and hashed in
+  advance; benign perturbations and deliberate violations are injected;
+  and the substrate's decision and its stated reason are compared
+  against predictions locked before execution. The primary outcome is
+  predicate-level agreement rather than decision-level, because a system
+  can reach a correct decision by an incorrect route. False-positive
+  rate on negative controls is reported unconditionally, because a gate
+  that holds on everything scores perfectly on violations and is
+  worthless. Ships with a rule-agnostic canonicalization engine
+  validated against the RFC 8785 published vectors, a 33-case
+  adversarial differential corpus, a clean-room receipt verifier, a
+  first-divergence locator, and a harness validated against six mock
+  substrates with known defects.
+keywords:
+  - conformance testing
+  - preregistration
+  - canonicalization
+  - RFC 8785
+  - governed execution
+  - admission control
+  - reproducibility
+  - clean-room implementation
+license: MIT
+version: 1.0.0
+date-released: '2026-08-25'
+references:
+  - type: software
+    title: >-
+      IRMB QEC-P1: Drift-Aware Repetition Code
+    authors:
+      - given-names: Billy
+        family-names: Davis
+        name-suffix: Jr.
+    doi: 10.5281/zenodo.22050536
+    notes: >-
+      Source of the collected session data used as the conformance
+      study's parent and compliant successor artifacts.
