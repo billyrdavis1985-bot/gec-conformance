@@ -318,6 +318,32 @@ the affected result is reported. Deviations are not edits: no line above is alte
 
 _(none at registration)_
 
+**D-1 — 2026-08-25 — Stage B parent and successor sourced from published QEC-P1 sessions.**
+
+At registration the fixture parent was a labelled stub, and Stage B of the freeze was
+recorded PROVISIONAL. Stage B is now FROZEN against collected data.
+
+The parent is published session 11 and the compliant successor is published session 12,
+both on ibm_marrakesh, from the QEC-P1 study (Zenodo concept DOI 10.5281/zenodo.22050536).
+Their collection times are separated by 13.74 hours — a real separation produced by queue
+scheduling, not constructed — which satisfies the contract's ≥12h admission predicate
+without adjustment.
+
+Consequence for the case set: C01, the primary negative control, is now real end to end —
+collected parent, collected successor, real separation, real syndrome data, real decode.
+The violating cases (C06 at 3h, C22 at 11h59m) remain synthetic successors constructed
+from the collected parent, because no collected pair exists at those separations and none
+should be manufactured on hardware to create one. Every synthetic artifact is labelled in
+its own bytes and asserted by test.
+
+Two properties of the source data are recorded because they bound what the conformance
+study can claim, and neither affects it. First, both sessions ran under one frozen
+calibration cycle, so the calibration window identifier is identical across them; this is
+why C24's stratification values are set explicitly rather than derived. Second, an earlier
+pilot session on a different backend is not pooled with this series and is not used here.
+
+No hypothesis, case, prediction, or falsification criterion is altered by this entry.
+
 ---
 
 ## 10. Publication

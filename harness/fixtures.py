@@ -3,19 +3,21 @@ Phase 1 fixture construction.
 
 Design decision, recorded because it affects what the study can claim:
 
-  The PARENT is the real session-1 artifact. The SUCCESSORS are synthetic,
-  constructed at controlled time offsets from the parent's actual
-  collection_start.
+  The PARENT is real. The COMPLIANT successor is real. Every VIOLATING
+  successor is synthetic, constructed at a controlled offset from the parent.
 
-This is the honest split. The governing invariant is a relation between two
-sessions, and only one of them exists yet — session 2 is still queued. Waiting
-for it would gate the conformance study on IBM's fair-share scheduler, which
-assigns no predictable position. Synthesizing both sessions instead would mean
-the study never touches collected data at all.
+Both real artifacts are extracted from published QEC-P1 session data
+(Zenodo 10.5281/zenodo.22050536): published sessions 11 and 12 on ibm_marrakesh,
+separated by 13.74 hours of collection time. That separation is not constructed
+— it is what the fair-share queue produced — and it satisfies the contract's
+>=12h admission predicate on its own.
 
-So: the parent is real, and each successor is a deliberate construction whose
-only material difference from its siblings is the field the case targets.
-Every successor is labelled synthetic in its own artifact and in the
+So case C01, the primary negative control, is real end to end: real parent, real
+successor, real separation, real syndrome data, real decode. The violating cases
+are synthetic because no real pair exists at 3h or 11h59m and none should be
+manufactured on hardware to create one.
+
+Every synthetic successor is labelled as such in its own artifact and in the
 preregistration. No result is reported as though a synthetic session were
 collected.
 
@@ -47,6 +49,7 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 PARENT_ARTIFACT_PATH = Path("fixtures/session-1.json")
+REAL_SUCCESSOR_PATH = Path("fixtures/session-2-real.json")
 
 PARENT_STUB: dict[str, Any] = {
     "session_index": 1,
@@ -74,6 +77,14 @@ def load_parent() -> tuple[dict, bool]:
         with PARENT_ARTIFACT_PATH.open("rb") as handle:
             return json.loads(handle.read().decode("utf-8")), True
     return dict(PARENT_STUB), False
+
+
+def load_real_successor() -> dict | None:
+    """The collected compliant successor, if wired. None falls back to synthetic."""
+    if REAL_SUCCESSOR_PATH.exists():
+        with REAL_SUCCESSOR_PATH.open("rb") as handle:
+            return json.loads(handle.read().decode("utf-8"))
+    return None
 
 
 def _parse(text: str) -> datetime:
@@ -157,11 +168,21 @@ def build_phase1(parent: dict) -> list[Fixture]:
 
     # -- negative controls ---------------------------------------------------
 
+    real_successor = load_real_successor()
     fixtures.append(Fixture(
         "C01", "Clean session 2, compliant separation, valid parent",
-        successor(parent, compliant),
-        "PERMIT", (), True,
-        "Baseline negative control. A HOLD here falsifies H5 on its own.",
+        real_successor if real_successor is not None else successor(parent, compliant),
+        "PERMIT", (),
+        synthetic=real_successor is None,
+        note="Baseline negative control. A HOLD here falsifies H5 on its own. "
+        + (
+            "Real end to end: collected parent and collected successor, "
+            "separated by the collection times the queue actually produced, "
+            "with real syndrome data and a real decode. Nothing about this case "
+            "is constructed."
+            if real_successor is not None
+            else "Synthetic successor — the collected pair is not wired in."
+        ),
     ))
 
     benign = successor(parent, compliant)

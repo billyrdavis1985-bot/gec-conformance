@@ -31,6 +31,12 @@ from harness.mocks import (  # noqa: E402
 from harness.runner import NEGATIVE_CONTROLS, Harness, NullAdapter  # noqa: E402
 
 
+def _separation_hours(a: dict, b: dict) -> float:
+    from harness.fixtures import _parse
+
+    return (_parse(b["collection_start"]) - _parse(a["collection_start"])).total_seconds() / 3600
+
+
 def run_against(adapter_class):
     parent, _ = load_parent()
     fixtures = build_phase1(parent)
@@ -66,16 +72,57 @@ class TestFixtureConstruction(unittest.TestCase):
         delta = _parse(c23["collection_start"]) - _parse(c22["collection_start"])
         self.assertEqual(delta.total_seconds(), 120)
 
-    def test_c24_differs_from_c01_only_in_stratification_fields(self):
-        c01 = next(f for f in self.fixtures if f.case_id == "C01").artifact
+    def test_c24_differs_only_in_stratification_fields(self):
+        """C24 must isolate the stratification fields and nothing else.
+
+        Compared against an equivalently constructed compliant successor rather
+        than against C01: C01 is now collected data with its own real
+        collection_start, so it is not the right baseline for this comparison.
+        """
+        from datetime import timedelta
+
+        from harness.fixtures import successor
+
+        baseline = successor(self.parent, timedelta(hours=14))
         c24 = next(f for f in self.fixtures if f.case_id == "C24").artifact
-        differing = {k for k in set(c01) | set(c24) if c01.get(k) != c24.get(k)}
+        differing = {
+            k for k in set(baseline) | set(c24) if baseline.get(k) != c24.get(k)
+        }
         self.assertEqual(differing, {"calibration_stratum", "calibration_age_hours"})
 
-    def test_successors_are_marked_synthetic(self):
+    def test_synthetic_successors_are_labelled_and_real_ones_are_not(self):
+        """The label must track reality in both directions.
+
+        A synthetic artifact silently passing as collected would misrepresent
+        the study; a collected artifact wrongly labelled synthetic would
+        understate it. Both are errors.
+        """
         for fixture in self.fixtures:
-            if fixture.artifact is not None:
-                self.assertTrue(fixture.artifact.get("_synthetic"))
+            if fixture.artifact is None:
+                continue
+            labelled = bool(fixture.artifact.get("_synthetic"))
+            self.assertEqual(
+                labelled, fixture.synthetic,
+                f"{fixture.case_id}: artifact label {labelled} disagrees with "
+                f"fixture.synthetic {fixture.synthetic}",
+            )
+            if not fixture.synthetic:
+                self.assertIn(
+                    "_source", fixture.artifact,
+                    f"{fixture.case_id} claims to be collected data but cites no source",
+                )
+
+    def test_c01_uses_collected_data_when_wired(self):
+        from harness.fixtures import load_real_successor
+
+        c01 = next(f for f in self.fixtures if f.case_id == "C01")
+        if load_real_successor() is None:
+            self.skipTest("collected successor not wired")
+        self.assertFalse(c01.synthetic)
+        self.assertGreaterEqual(
+            _separation_hours(self.parent, c01.artifact), 12.0,
+            "C01 is the compliant control; its real separation must satisfy the predicate",
+        )
 
     def test_timestamps_use_the_pinned_format(self):
         from verifier.receipt import parse_rfc3339_utc

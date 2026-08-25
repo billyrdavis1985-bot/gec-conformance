@@ -1,6 +1,6 @@
 {
   "digest_algorithm": "sha256",
-  "frozen_at": "2026-08-13T23:39:14Z",
+  "frozen_at": "2026-08-25T21:44:34Z",
   "manifest_version": "1.0.0",
   "notes": [
     "Stage A depends on nothing external and is frozen independently of stage B; its digests do not change when stage B lands.",
@@ -15,32 +15,32 @@
     "contract_digest": "9d855f54dc26f7393149496135df76eb5bad03a2f004878edc8cca1704bd3f45",
     "decode_table_digest": "dabd4949875205de658164fa70e1c14c8e04a65568b0c2a62ca453a115c6b5e8",
     "decode_table_entries": 64,
-    "harness_digest": "9dc6fe2707e126eb591ca7bc7dc9ea3682bc9808840771d3f071aa2465440698",
+    "harness_digest": "a37a972983a06fb0944519c2166fe61f117d4fc35f52e94decb6defbed3451d0",
     "implementation_digest": "9876448c37812b138587c78229a20b6a04a69355d6972109b3f31455dfdf2b51",
-    "preregistration_digest": "191fa189f75629c3d8b6cb25c702054fe6760d29963d1b0997643d7d4ed9df84",
+    "preregistration_digest": "e008a58e996831740f35db67cfb70c674b6fd4cb971b1dc67aa8a8b255a4f5b7",
     "verifier_digest": "58987dfe445ee913e7af0b4d3d189c9cd7b39d5d25b5e483759c9913bfbe4e7d"
   },
   "stage_a_status": "FROZEN",
   "stage_b": {
-    "fixture_set_digest": "82e18fa03b338f4f5d047a4f3ed6126c1294a3444a524a22e071f0c3c078770d",
+    "fixture_set_digest": "aebe58a58f6150e0cae983a2d2d7edf57bb94a0b2b653031e09d12d28a84c521",
     "fixtures": {
       "C01": {
-        "artifact_digest": "e3569a97230a5b3d89d08ea92da43f30f04d1b9aabc058809dadedde076191d3",
+        "artifact_digest": "b524064bbb51dcfbb1f7863aa5c5ece2bef47cb00b5eda5a6c7861651d639922",
         "predicted_decision": "PERMIT",
         "predicted_failing_predicates": []
       },
       "C02": {
-        "artifact_digest": "7c1eba6ea44e7088c858082567d0c2db9901850a5bf7e9cc543dd5da9ef8d190",
+        "artifact_digest": "b2f2f1933036771688eebe0e01ccd3beb8c51b9ca20fdda0bf39a74f06f9433a",
         "predicted_decision": "PERMIT",
         "predicted_failing_predicates": []
       },
       "C05": {
-        "artifact_digest": "e3569a97230a5b3d89d08ea92da43f30f04d1b9aabc058809dadedde076191d3",
+        "artifact_digest": "08ca9648fe459430f70b6bd0eab5fa30ea7753353e791552bb4fda255b28f2e9",
         "predicted_decision": "PERMIT",
         "predicted_failing_predicates": []
       },
       "C06": {
-        "artifact_digest": "4c666ffbfdd86f5b9af337c404f403c85eb30a45a506d24f99d2dda7083101a6",
+        "artifact_digest": "4b7b930df181a8bcb17fab06fe3d19f50c3a09577552ec1becb23cdb08f6a9ee",
         "predicted_decision": "HOLD",
         "predicted_failing_predicates": [
           "I2",
@@ -48,21 +48,21 @@
         ]
       },
       "C07": {
-        "artifact_digest": "bf6ab73467b3030a8747ce8e673d180f5f858f2bd343e7a90dca2bd9b2a47ae2",
+        "artifact_digest": "a904a350f2c1bfe35be9fc77bac7a0f124c27244712a1a2ab59122e486301077",
         "predicted_decision": "HOLD",
         "predicted_failing_predicates": [
           "I2"
         ]
       },
       "C09": {
-        "artifact_digest": "e3569a97230a5b3d89d08ea92da43f30f04d1b9aabc058809dadedde076191d3",
+        "artifact_digest": "08ca9648fe459430f70b6bd0eab5fa30ea7753353e791552bb4fda255b28f2e9",
         "predicted_decision": "PERMIT\u00d71, HOLD\u00d71",
         "predicted_failing_predicates": [
           "I2"
         ]
       },
       "C13": {
-        "artifact_digest": "e3569a97230a5b3d89d08ea92da43f30f04d1b9aabc058809dadedde076191d3",
+        "artifact_digest": "08ca9648fe459430f70b6bd0eab5fa30ea7753353e791552bb4fda255b28f2e9",
         "predicted_decision": "HOLD",
         "predicted_failing_predicates": [
           "I6"
@@ -76,7 +76,7 @@
         ]
       },
       "C22": {
-        "artifact_digest": "a4448a95a997055bf3bededccaaaff97b4391bef0ac6641d0e2afb758f90313d",
+        "artifact_digest": "17d93ac2f5e29f7c2ea757e7d3113b8cabcff607c7cda45051b83c679a7e72a7",
         "predicted_decision": "HOLD",
         "predicted_failing_predicates": [
           "I2",
@@ -84,18 +84,18 @@
         ]
       },
       "C23": {
-        "artifact_digest": "5350f94558244d86a619aaccfc574419c518301a8d6d6fb076b6ad846fb9f83a",
+        "artifact_digest": "6e9440a1ebb6efd6549be758b2e62979d0b1201ec4fd2aaf779862e9b26cab6d",
         "predicted_decision": "PERMIT",
         "predicted_failing_predicates": []
       },
       "C24": {
-        "artifact_digest": "b495efb6b298d26981b25513f8808746135867a9ee4cea53583db47cfe645210",
+        "artifact_digest": "6e7643ade8541bc0766bba4d00bb01933f346b4639c5613325c14a89eb48c74c",
         "predicted_decision": "PERMIT",
         "predicted_failing_predicates": []
       }
     },
-    "parent_collection_start": "2026-08-07T03:00:00Z",
-    "parent_is_collected_data": false
+    "parent_collection_start": "2026-08-14T22:20:53Z",
+    "parent_is_collected_data": true
   },
-  "stage_b_status": "PROVISIONAL \u2014 parent artifact is a stub"
+  "stage_b_status": "FROZEN"
 }
