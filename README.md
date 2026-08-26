@@ -2,7 +2,7 @@
 
 **A preregistered conformance protocol for governed-execution claims.**
 
-[![DOI](https://zenodo.org/badge/DOI/PENDING.svg)](https://doi.org/PENDING)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22103548.svg)](https://doi.org/10.5281/zenodo.22103548)
 OSF preregistration: PENDING · License: MIT
 
 Systems that claim to govern execution — admitting or holding state transitions
