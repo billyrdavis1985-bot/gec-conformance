@@ -149,13 +149,13 @@ can reach the right decision by the wrong route and decision-level scoring canno
 
 ---
 
-## 5. Case matrix — 21 cases, predictions locked
+## 5. Case matrix — 24 cases, predictions locked
 
 Predicted decision and predicted failing predicate are fixed at registration. Phase 1 cases
 are marked ●; the remainder are declared here and deferred, so that the executed subset cannot
 be read as post-hoc selection.
 
-### 5.1 Negative controls — must PERMIT (5)
+### 5.1 Negative controls — must PERMIT (7)
 
 | ID | Case | Predicted | Predicate |
 |---|---|---|---|
@@ -173,6 +173,8 @@ contract did not make material — a failure mode distinct from missing a real v
 and one that no violation-detection case can surface.
 
 C05 is simultaneously the canonicalization test (H4) and a negative control (H5).
+
+**Negative-control set.** A negative control is any case whose predicted decision is PERMIT — the cases that measure the false-positive rate. That set is C01, C02, C03, C04, C05, C24 here, plus C23 in §5.2 (filed there because it is the compliant half of the C22/C23 pair, but scored as a control). Seven in total. The label follows the prediction, not the section a case is filed under.
 
 ### 5.2 Continuity and lineage (7)
 
@@ -283,7 +285,7 @@ Fixed in advance. Each is a single-case criterion; no aggregate score can rescue
 | H2 | C18 goes undetected, or C17/C19 produce their consequence before any HOLD |
 | H3 | I2, I4 and I7 co-fire on 100% of C06–C12 with substantively identical evidence payloads |
 | H4 | Clean-room and SCQOS canonicalization disagree on any byte in C05 |
-| H5 | Any negative control (C01–C05) returns HOLD |
+| H5 | Any negative control (C01, C02, C03, C04, C05, C23, C24) returns HOLD |
 | H6 | The contract requires manual bridging by either party to be accepted |
 
 **H3 note.** Co-firing alone is not proof of aliasing; a single event can legitimately violate
@@ -317,6 +319,50 @@ Any departure from this protocol is appended below with date, description, and r
 the affected result is reported. Deviations are not edits: no line above is altered.
 
 _(none at registration)_
+
+**D-2 — 2026-08-26 — Documentation-drift corrections; consistency test added.**
+
+An independent audit by SC-Engineering (Eric Robles), applying this instrument's own
+declared-vs-actual standard to the instrument, found six places where a document's claim
+about the code disagreed with the code. All six are Reference/Coherence defects — prose
+describing the artifacts had drifted from the artifacts during versioning. No digest, no
+fixture, and no finding was affected; the artifacts were correct throughout. Corrected here,
+with Eric credited as the finder:
+
+1. `capability_version` stated `1.0.0` in the contract header and §1 table while the code
+   declared `1.1.0`. Contract corrected to `1.1.0`.
+2. §5 header said "21 cases"; the matrix declares 24 (C01–C24). Header corrected to 24.
+3. Negative-control set was stated three ways (code: 5; §5.1: 6; H5: "C01–C05"). Resolved
+   to the principled definition — a negative control is any case predicted to PERMIT — which
+   is C01, C02, C03, C04, C05, C23, C24 (seven). Code, §5.1 count, and the H5 criterion now
+   all state this set. This makes the false-positive rate measure every case that should be
+   admitted, which is its purpose; the prior five-case set silently excluded two PERMIT cases
+   from the denominator.
+4. README stated both "131 tests" and "136 tests". Normalized to the actual suite size.
+5. Contract carried status DRAFT with blank `date_frozen` and `contract_digest` while
+   FREEZE-MANIFEST.json reported Stage A FROZEN. Contract set to FROZEN with both fields
+   filled from the manifest.
+6. The OSF registration text's "not yet wired in" could be read as "the data did not exist."
+   Clarified: sessions 11 and 12 were collected 2026-08-14/15, before registration; "not yet
+   wired" meant not yet loaded into the fixture set.
+
+Correcting defect 5 exposed a latent bug in freeze.py: the digest self-exclusion blanked the
+digest lines but not `date_frozen` or `contract_status`, so filling those fields at freeze
+time changed the contract digest. The blanking now covers all fields set at freeze, making the
+contract digest stable and idempotent. The contract digest is consequently recomputed under the
+corrected rule: **b7b90b9c42de057c6abbbb911f97d1d2dbc5108be51297d71b509a7ed5d2d17f**. This supersedes the value in the v1.0.0 archive, and is the digest a
+reader should verify against.
+
+To prevent this class of drift recurring, a consistency test suite (tests/test_consistency.py)
+was added. It reads every fact that appears in both code and documentation — capability version
+across all sites, declared case count against actual case rows, phase-1 markers against the
+phase-1 list, the negative-control set against the PERMIT predictions, the README test count
+against the live suite, and the contract's self-declared status and digest against the manifest
+— and asserts agreement. This class of failure now fails the build instead of reaching a reader.
+
+No hypothesis, case prediction, or falsification target is changed by this entry. H5's criterion
+is clarified to name the full negative-control set it was always meant to cover ("a gate that
+holds on everything"), not a narrower range.
 
 **D-1 — 2026-08-25 — Stage B parent and successor sourced from published QEC-P1 sessions.**
 

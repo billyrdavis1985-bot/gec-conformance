@@ -273,8 +273,10 @@ class TestReportingDiscipline(unittest.TestCase):
         self.assertEqual(h.summary()["cases_executed"], 0)
 
     def test_negative_control_set_matches_the_preregistration(self):
+        # A negative control is any case predicted to PERMIT (prereg §5.1).
         self.assertEqual(
-            set(NEGATIVE_CONTROLS), {"C01", "C02", "C05", "C23", "C24"}
+            set(NEGATIVE_CONTROLS),
+            {"C01", "C02", "C03", "C04", "C05", "C23", "C24"},
         )
 
 

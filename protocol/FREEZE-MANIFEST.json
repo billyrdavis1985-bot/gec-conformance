@@ -1,8 +1,6 @@
 {
-  "osf_registration_doi": "10.17605/OSF.IO/XNC43",`n  "zenodo_concept_doi": "10.5281/zenodo.22103548",
   "digest_algorithm": "sha256",
-  "frozen_at": "2026-08-25T21:44:34Z",
-  "osf_registration_doi": "10.17605/OSF.IO/XNC43",`n  "zenodo_concept_doi": "10.5281/zenodo.22103548",
+  "frozen_at": "2026-08-26T09:36:24Z",
   "manifest_version": "1.0.0",
   "notes": [
     "Stage A depends on nothing external and is frozen independently of stage B; its digests do not change when stage B lands.",
@@ -14,12 +12,12 @@
   "stage_a": {
     "canonicalizer_digest": "753777f519e42755342fd3f3d3a3312c216f7dd9a1f1c56e2a659060da32233c",
     "capability_version": "1.1.0",
-    "contract_digest": "9d855f54dc26f7393149496135df76eb5bad03a2f004878edc8cca1704bd3f45",
+    "contract_digest": "b7b90b9c42de057c6abbbb911f97d1d2dbc5108be51297d71b509a7ed5d2d17f",
     "decode_table_digest": "dabd4949875205de658164fa70e1c14c8e04a65568b0c2a62ca453a115c6b5e8",
     "decode_table_entries": 64,
-    "harness_digest": "a37a972983a06fb0944519c2166fe61f117d4fc35f52e94decb6defbed3451d0",
+    "harness_digest": "ec2ffc3441c87baa4c58fe04c9f1574d454b9ed67f89d44e1969ea0140465c2d",
     "implementation_digest": "9876448c37812b138587c78229a20b6a04a69355d6972109b3f31455dfdf2b51",
-    "preregistration_digest": "e008a58e996831740f35db67cfb70c674b6fd4cb971b1dc67aa8a8b255a4f5b7",
+    "preregistration_digest": "41b4bf9c04ab7d5a094302f9ccd81aa593b925bdbbebe06166950745e2064098",
     "verifier_digest": "58987dfe445ee913e7af0b4d3d189c9cd7b39d5d25b5e483759c9913bfbe4e7d"
   },
   "stage_a_status": "FROZEN",

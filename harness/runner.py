@@ -38,7 +38,11 @@ from harness.fixtures import Fixture, build_phase1, load_parent
 from verifier.receipt import INVARIANTS, ReceiptVerifier, Status
 
 LINEAGE_PREDICATES = ("I2", "I4", "I7")
-NEGATIVE_CONTROLS = ("C01", "C02", "C05", "C23", "C24")
+# A negative control is any case predicted to PERMIT — the cases that
+# measure the false-positive rate. C03/C04 are declared PERMIT cases in the
+# deferred set; C23 is the compliant half of the C22/C23 pair. The label
+# follows the prediction, not the section the case is filed under.
+NEGATIVE_CONTROLS = ("C01", "C02", "C03", "C04", "C05", "C23", "C24")
 
 
 class SubstrateAdapter(Protocol):

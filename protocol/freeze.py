@@ -82,7 +82,7 @@ PREREG_PATH = "protocol/PREREG-scqos-conformance-v1.1.0.md"
 # Lines in the contract that carry digests. Blanked before hashing, because a
 # document cannot contain its own hash.
 DIGEST_LINE_PATTERN = re.compile(
-    r"^\*\*(contract_digest|implementation_digest|decode_table_digest):\*\*.*$",
+    r"^\*\*(contract_digest|implementation_digest|decode_table_digest|date_frozen):\*\*.*$",
     re.MULTILINE,
 )
 
@@ -126,6 +126,11 @@ def canonical_document_bytes(path: Path, blank_digest_lines: bool = False) -> by
     if blank_digest_lines:
         text = DIGEST_LINE_PATTERN.sub(
             lambda m: f"**{m.group(1)}:** _(blanked for digest computation)_", text
+        )
+        text = re.sub(
+            r"^\*\*contract_status:\*\*.*$",
+            "**contract_status:** _(blanked for digest computation)_",
+            text, flags=re.MULTILINE,
         )
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     text = "\n".join(line.rstrip() for line in text.split("\n"))

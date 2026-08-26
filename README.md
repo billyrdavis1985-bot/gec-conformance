@@ -127,7 +127,7 @@ the build.
 
 ## Usage
 
-    python3 -m unittest discover -s tests     # 131 tests
+    python3 -m unittest discover -s tests     # 158 tests
     python3 -m unittest tests.test_rfc8785_vectors -v   # official RFC vectors
     python3 cli.py rulesets                   # every ruleset and its decisions
     python3 cli.py corpus --high-value        # the discriminating cases
@@ -229,7 +229,7 @@ emits is a divergence at that stage.
 
     git clone https://github.com/billyrdavis1985-bot/gec-conformance
     cd gec-conformance
-    python3 -m unittest discover -s tests          # 136 tests, no dependencies
+    python3 -m unittest discover -s tests          # 158 tests, no dependencies
     python3 cli.py diff scqos_literal scqos_es6 -v # reproduce CANON-01
     python3 protocol/freeze.py                     # recompute every digest
 
@@ -263,7 +263,7 @@ tracks reality in both directions.
     verifier/     clean-room receipt verifier
     harness/      fixtures, runner, mock substrates, divergence locator
     fixtures/     frozen input artifacts
-    tests/        136 tests
+    tests/        158 tests, incl. declared-vs-actual consistency checks
 
 License MIT. Author's code and experimental data remain the author's; adapter,
 contract and receipt artifacts may be used by SC-Engineering; the author retains

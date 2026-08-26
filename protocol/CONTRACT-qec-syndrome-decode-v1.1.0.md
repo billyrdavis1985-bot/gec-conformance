@@ -1,14 +1,14 @@
 # Capability Execution Contract
 
 **capability_id:** `qec-syndrome-decode`
-**capability_version:** `1.0.0`
+**capability_version:** `1.1.0`
 **contract_version:** `1.1.0`
-**contract_status:** DRAFT — freezes at §11; no field may change after freeze without a version increment
+**contract_status:** FROZEN — see §11; no field may change without a version increment
 **supersedes:** `1.0.0` (unfrozen, unpublished, never executed against)
 **author:** Billy R. Davis Jr., Hudson Forge Technologies LLC
 **authored_independently_of:** SC-Engineering / SCQOS
-**date_frozen:** _(set at freeze; see §11)_
-**contract_digest:** _(computed at freeze per §11; this document is content-addressed)_
+**date_frozen:** 2026-08-25T21:44:34Z
+**contract_digest:** `b7b90b9c42de057c6abbbb911f97d1d2dbc5108be51297d71b509a7ed5d2d17f`
 
 ---
 
@@ -55,7 +55,7 @@ any conversation, message, or later summary, this document governs.
 | Field | Value |
 |---|---|
 | `capability_id` | `qec-syndrome-decode` |
-| `capability_version` | `1.0.0` |
+| `capability_version` | `1.1.0` |
 | `implementation_digest` | SHA-256 of the frozen source tree tarball (§11) |
 | `decode_table_digest` | SHA-256 of the canonical decode table artifact |
 | `runtime` | Python 3.11, standard library only |
