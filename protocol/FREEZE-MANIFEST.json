@@ -1,6 +1,8 @@
 {
   "digest_algorithm": "sha256",
   "frozen_at": "2026-08-26T09:36:24Z",
+  "zenodo_concept_doi": "10.5281/zenodo.22103548",
+  "osf_registration_doi": "10.17605/OSF.IO/XNC43",
   "manifest_version": "1.0.0",
   "notes": [
     "Stage A depends on nothing external and is frozen independently of stage B; its digests do not change when stage B lands.",
